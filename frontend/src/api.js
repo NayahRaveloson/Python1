@@ -35,7 +35,7 @@ api.interceptors.response.use(
     if (tokenExpire && !requete.dejaRelancee && !requete.url.startsWith("/auth/")) {
       requete.dejaRelancee = true;
       try {
-        const reponse = await axios.post("/api/auth/token/refresh/", { refresh });
+        const reponse = await axios.post("/https://python1-jsnr.onrender.com", { refresh });
         localStorage.setItem("access", reponse.data.access);
         requete.headers.Authorization = `Bearer ${reponse.data.access}`;
         return api(requete);
