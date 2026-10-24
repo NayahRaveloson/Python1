@@ -12,8 +12,8 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
-      "/api": "http://localhost:8000",
-      "/media": "http://localhost:8000",
+      "/api": "https://python1-jsnr.onrender.com",
+      "/media": "https://python1-jsnr.onrender.com/media",
     },
   },
 });
