@@ -1,0 +1,68 @@
+@use "../core/variable"as *;
+
+.carte {
+    background: $couleur-carte;
+    border: 1px solid rgba($couleur-bordure, 0.85);
+    border-radius: 13px;
+    box-shadow: $ombre-carte;
+    padding: $espace-grand;
+    margin-bottom: $espace-moyen;
+
+    h2 {
+        margin-bottom: $espace-moyen;
+    }
+}
+
+.message {
+    padding: 0.8rem 1rem;
+    border-radius: 9px;
+    margin-bottom: $espace-moyen;
+    border-left: 4px solid;
+}
+
+.message-erreur {
+    background: #f8e9e7;
+    border-color: $couleur-danger;
+    color: $couleur-danger;
+}
+
+.message-succes {
+    background: #e8f0ea;
+    border-color: $couleur-succes;
+    color: $couleur-succes;
+}
+
+.message-info {
+    background: #f7f1e5;
+    border-color: $couleur-accent;
+    color: $couleur-principale;
+}
+
+.badge {
+    display: inline-block;
+    font-size: 0.78rem;
+    font-weight: 650;
+    padding: 0.22rem 0.65rem;
+    border-radius: 999px;
+    white-space: nowrap;
+}
+
+.badge-brouillon {
+    background: #ebe8e2;
+    color: $couleur-neutre;
+}
+
+.badge-envoyee {
+    background: #f6ead2;
+    color: $couleur-attention;
+}
+
+.badge-payee {
+    background: #e1ede4;
+    color: $couleur-succes;
+}
+
+.badge-retard {
+    background: #f4dedb;
+    color: $couleur-danger;
+}

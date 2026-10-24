@@ -1,0 +1,14 @@
+@use "variable" as *;
+
+
+@mixin tablette {
+  @media (max-width: $point-tablette) {
+    @content;
+  }
+}
+
+@mixin mobile {
+  @media (max-width: $point-mobile) {
+    @content;
+  }
+}

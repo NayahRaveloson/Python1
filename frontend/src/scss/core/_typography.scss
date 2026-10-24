@@ -1,0 +1,45 @@
+@use "variable" as *;
+
+h1,
+h2,
+h3 {
+  font-family: $police-titre;
+  font-weight: 700;
+  line-height: 1.25;
+  margin: 0 0 $espace-moyen;
+}
+
+h1 {
+  font-size: 1.9rem;
+}
+
+h2 {
+  font-size: 1.3rem;
+}
+
+h3 {
+  font-size: 1.05rem;
+}
+
+p {
+  margin: 0 0 $espace-moyen;
+}
+
+a {
+  color: $couleur-principale;
+  text-decoration-color: $couleur-accent;
+  text-underline-offset: 3px;
+
+  &:hover {
+    color: $couleur-accent-fonce;
+  }
+}
+
+.texte-discret {
+  color: $couleur-secondaire;
+  font-size: 0.9rem;
+}
+
+.texte-droite {
+  text-align: right;
+}

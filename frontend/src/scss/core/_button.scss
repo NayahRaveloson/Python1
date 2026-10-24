@@ -1,0 +1,101 @@
+@use "variable"as *;
+
+.bouton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  font: inherit;
+  font-weight: 650;
+  text-decoration: none;
+  text-align: center;
+  cursor: pointer;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 0.68rem 1.05rem;
+  line-height: 1.25;
+  transition: background 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease,
+    transform 160ms ease,
+    box-shadow 160ms ease;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $couleur-accent;
+    outline-offset: 3px;
+  }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    transform: none;
+  }
+}
+
+.bouton-principal {
+  background: $couleur-principale;
+  color: $couleur-texte-clair;
+  box-shadow: 0 3px 8px rgba(41, 39, 37, 0.12);
+
+  &:hover:not(:disabled) {
+    background: $couleur-principale-claire;
+    color: white;
+  }
+}
+
+.bouton-accent {
+  background: $couleur-accent;
+  color: $couleur-principale;
+
+  &:hover:not(:disabled) {
+    background: $couleur-accent-fonce;
+    color: $couleur-principale;
+    box-shadow: 0 4px 10px rgba(183, 155, 114, 0.22);
+  }
+}
+
+.bouton-discret {
+  background: $couleur-carte;
+  color: $couleur-principale;
+  border-color: $couleur-bordure;
+
+  &:hover:not(:disabled) {
+    background: $couleur-fond;
+    border-color: $couleur-accent;
+    color: $couleur-principale;
+  }
+}
+
+.bouton-danger {
+  background: $couleur-carte;
+  color: $couleur-danger;
+  border-color: rgba($couleur-danger, 0.45);
+
+  &:hover:not(:disabled) {
+    background: $couleur-danger;
+    color: $couleur-texte-clair;
+  }
+}
+
+.bouton-large {
+  width: 100%;
+}
+
+.bouton-petit {
+  padding: 0.48rem 0.72rem;
+  font-size: 0.84rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bouton {
+    transition: none;
+  }
+
+  .bouton:hover:not(:disabled) {
+    transform: none;
+  }
+}

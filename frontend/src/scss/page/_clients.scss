@@ -1,0 +1,45 @@
+@use "../core/variable" as *;
+@use "../core/mixins" as *;
+
+.barre-recherche {
+  max-width: 360px;
+}
+
+.cacher-mobile {
+  @include mobile {
+    display: none;
+  }
+}
+
+.actions-ligne {
+  display: flex;
+  justify-content: flex-end;
+  gap: $espace-petit;
+  flex-wrap: wrap;
+
+  .tableau & {
+    @include mobile {
+      flex-direction: column;
+      align-items: stretch;
+    }
+  }
+}
+
+
+.choix-type-client {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+}
+
+.choix-type-client label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.choix-type-client input {
+  accent-color: var(--couleur-accent, #b79b72);
+}

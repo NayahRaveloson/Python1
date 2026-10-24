@@ -1,0 +1,23 @@
+@use "../core/variable" as *;
+
+.page-connexion {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: $espace-moyen;
+}
+
+.carte-connexion {
+  width: 100%;
+  max-width: 420px;
+  background: $couleur-carte;
+  border-radius: $rayon;
+  box-shadow: $ombre-feuille;
+  padding: $espace-grand;
+  border-top: 4px solid $couleur-accent;
+
+  h1 {
+    margin-bottom: $espace-petit;
+  }
+}

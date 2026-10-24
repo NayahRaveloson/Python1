@@ -1,0 +1,140 @@
+@use "variable"as *;
+
+.champ {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: $espace-moyen;
+
+  label {
+    font-size: 0.86rem;
+    font-weight: 650;
+    color: $couleur-secondaire;
+  }
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  min-width: 0;
+  font: inherit;
+  color: $couleur-principale;
+  background-color: $couleur-carte;
+  border: 1px solid $couleur-bordure;
+  border-radius: 8px;
+  padding: 0.72rem 0.8rem;
+  transition: border-color 150ms ease, box-shadow 150ms ease, background 150ms ease;
+
+  &:hover:not(:disabled) {
+    border-color: darken($couleur-bordure, 8%);
+  }
+
+  &:focus,
+  &:focus-visible {
+    outline: none;
+    border-color: $couleur-accent-fonce;
+    box-shadow: 0 0 0 3px rgba($couleur-accent, 0.17);
+  }
+
+  &:disabled {
+    background: $couleur-fond;
+    color: $couleur-secondaire;
+    cursor: not-allowed;
+  }
+
+  &::placeholder {
+    color: lighten($couleur-secondaire, 18%);
+  }
+}
+
+select {
+  cursor: pointer;
+  color-scheme: light;
+}
+
+input[type="checkbox"],
+input[type="radio"] {
+  width: auto;
+  accent-color: $couleur-accent-fonce;
+}
+
+input[type="file"] {
+  padding: 0.5rem;
+}
+
+textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+
+.champ-case {
+  display: flex;
+  align-items: center;
+  gap: $espace-petit;
+  margin-bottom: $espace-moyen;
+  cursor: pointer;
+
+  input {
+    width: auto;
+    accent-color: $couleur-accent-fonce;
+  }
+}
+
+.aide {
+  font-size: 0.8rem;
+  color: $couleur-secondaire;
+}
+
+.recherche {
+  position: relative;
+  margin-bottom: $espace-moyen;
+}
+
+.suggestions {
+  position: absolute;
+  z-index: 10;
+  left: 0;
+  right: 0;
+  margin: 2px 0 0;
+  padding: 0;
+  list-style: none;
+  background: $couleur-carte;
+  border: 1px solid $couleur-bordure;
+  border-radius: $rayon;
+  box-shadow: $ombre-feuille;
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.suggestions-titre {
+  padding: 0.4rem 0.8rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: $couleur-secondaire;
+  background: $couleur-fond;
+}
+
+.suggestion {
+  display: block;
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  color: $couleur-principale;
+  background: none;
+  border: none;
+  border-bottom: 1px solid $couleur-fond;
+  padding: 0.65rem 0.8rem;
+  cursor: pointer;
+
+  &:hover {
+    background: $couleur-fond;
+  }
+
+  small {
+    display: block;
+    color: $couleur-secondaire;
+  }
+}

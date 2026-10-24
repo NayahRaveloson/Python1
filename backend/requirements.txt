@@ -1,0 +1,8 @@
+Django>=5.2,<5.3
+djangorestframework>=3.16
+djangorestframework-simplejwt>=5.5
+PyMySQL>=1.1
+cryptography>=43
+reportlab>=4.2
+Pillow>=10.4
+python-dotenv>=1.0

@@ -1,0 +1,53 @@
+@use "../core/variable"as *;
+@use "../core/mixins"as *;
+
+.page {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 2rem clamp(1rem, 3vw, 2.5rem) 3rem;
+}
+
+.page-entete {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: $espace-moyen;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+
+    h1 {
+        margin: 0;
+    }
+}
+
+.grille-deux-colonnes {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: $espace-moyen;
+}
+
+.grille-trois-colonnes {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: $espace-moyen;
+}
+
+@media (max-width: 760px) {
+    .page {
+        padding: 1.25rem 1rem 2rem;
+    }
+
+    .grille-deux-colonnes {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 600px) {
+    .page-entete {
+        align-items: flex-start;
+    }
+
+    .page-entete>.bouton {
+        width: 100%;
+    }
+}

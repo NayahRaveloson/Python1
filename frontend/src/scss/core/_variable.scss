@@ -1,0 +1,43 @@
+@forward "fonts";
+
+
+$couleur-principale: #292725;
+$couleur-secondaire: #6b6257;
+$couleur-accent: #b79b72;
+$couleur-fond: #f4f0e8;
+$couleur-carte: #ffffff;
+
+
+$couleur-accent-fonce: #a38860;
+$couleur-principale-claire: #403d3a;
+$couleur-bordure: #e3dccf;
+$couleur-texte-clair: #ffffff;
+
+
+$couleur-succes: #4f7a5a;
+$couleur-attention: #a9761f;
+$couleur-danger: #9e3b34;
+$couleur-neutre: #8a8378;
+
+
+$espace-petit: 0.5rem;
+$espace-moyen: 1rem;
+$espace-grand: 1.5rem;
+$espace-tres-grand: 2.5rem;
+
+
+$rayon: 8px;
+$ombre-carte: 0 1px 3px rgba(41, 39, 37, 0.08);
+$ombre-feuille: 0 4px 18px rgba(41, 39, 37, 0.1);
+
+
+$largeur-page: 1100px;
+$point-tablette: 900px;
+$point-mobile: 600px;
+
+:root {
+  --couleur-principale: #{$couleur-principale};
+  --couleur-secondaire: #{$couleur-secondaire};
+  --couleur-accent: #{$couleur-accent};
+  --couleur-fond: #{$couleur-fond};
+}

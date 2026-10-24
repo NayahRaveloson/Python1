@@ -1,0 +1,166 @@
+@use "../core/variable" as *;
+@use "../core/mixins" as *;
+
+.feuille {
+  background: $couleur-carte;
+  border-radius: $rayon;
+  box-shadow: $ombre-feuille;
+  border-top: 4px solid $couleur-accent;
+  max-width: 860px;
+  margin: 0 auto;
+  padding: $espace-tres-grand;
+
+  @include mobile {
+    padding: $espace-moyen;
+  }
+}
+
+.feuille-entete {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: $espace-grand;
+  flex-wrap: wrap;
+  margin-bottom: $espace-grand;
+}
+
+.feuille-titre {
+  font-family: $police-titre;
+  font-size: 2rem;
+  letter-spacing: 0.08em;
+  margin: 0;
+}
+
+.feuille-numero {
+  color: $couleur-secondaire;
+  font-weight: 600;
+}
+
+.logo-facture {
+  max-height: 70px;
+  max-width: 180px;
+  margin-bottom: $espace-petit;
+  display: block;
+}
+
+.bloc-partie {
+  margin-bottom: $espace-grand;
+
+  h3 {
+    font-family: $police-texte;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: $couleur-secondaire;
+    padding-bottom: $espace-petit;
+    border-bottom: 1px solid $couleur-bordure;
+  }
+
+  p {
+    margin-bottom: 0.15rem;
+  }
+}
+
+.bloc-client {
+  background: $couleur-fond;
+  border-left: 3px solid $couleur-accent;
+  padding: $espace-moyen;
+  border-radius: 0 $rayon $rayon 0;
+}
+
+.titre-et-lien {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: $espace-petit;
+  margin-bottom: $espace-moyen;
+
+  h3 {
+    margin: 0;
+  }
+}
+
+.options-facture {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: $espace-moyen;
+  margin: $espace-grand 0;
+
+  @include tablette {
+    grid-template-columns: 1fr;
+  }
+}
+
+.totaux {
+  width: 100%;
+  max-width: 340px;
+  margin: $espace-grand 0 0 auto;
+}
+
+.totaux-ligne {
+  display: flex;
+  justify-content: space-between;
+  gap: $espace-moyen;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid $couleur-bordure;
+}
+
+.totaux-ttc {
+  background: $couleur-principale;
+  color: $couleur-texte-clair;
+  font-weight: 700;
+  padding: 0.7rem 0.8rem;
+  border-radius: $rayon;
+  border-bottom: none;
+  margin-top: $espace-petit;
+}
+
+.totaux-ariary {
+  font-size: 0.85rem;
+  color: $couleur-secondaire;
+  border-bottom: none;
+}
+
+.pied-facture {
+  margin-top: $espace-grand;
+  padding-top: $espace-moyen;
+  border-top: 1px solid $couleur-bordure;
+  font-size: 0.9rem;
+  color: $couleur-secondaire;
+}
+
+.actions-editeur {
+  display: flex;
+  justify-content: flex-end;
+  gap: $espace-petit;
+  flex-wrap: wrap;
+  margin-top: $espace-grand;
+}
+
+.detail-facture {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: $espace-grand;
+  align-items: start;
+
+  @include tablette {
+    grid-template-columns: 1fr;
+  }
+}
+
+.panneau-actions {
+  position: sticky;
+  top: $espace-moyen;
+  display: flex;
+  flex-direction: column;
+  gap: $espace-petit;
+
+  @include tablette {
+    position: static;
+    order: -1;
+  }
+
+  h2 {
+    margin-bottom: $espace-petit;
+  }
+}
