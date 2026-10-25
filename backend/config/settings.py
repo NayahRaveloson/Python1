@@ -32,7 +32,10 @@ SECRET_KEY = os.environ.get("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DEBUG", "True") == "True"
 ALLOWED_HOSTS = ["localhost", "127.0.0.1", "*"]
+render_hostname = os.environ.get("RENDER_EXTERNAL_HOSTNAME")
 
+if render_hostname:
+    ALLOWED_HOSTS.append(render_hostname)
 
 # Application definition
 
@@ -44,12 +47,14 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
+
     "factures",
 ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -159,3 +164,8 @@ MAILERS = {
 }
 
 CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOWED_ORIGINS = [
+    origine
+    for origine in os.environ.get("FRONTEND_URL", "").split(",")
+    if origine
+]
