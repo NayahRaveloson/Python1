@@ -16,7 +16,7 @@ COULEUR_FOND = colors.HexColor("#F4F0E8")
 STYLE_NORMAL = ParagraphStyle("normal", fontName="Helvetica", fontSize=9, leading=12, textColor=COULEUR_PRINCIPALE)
 STYLE_PETIT = ParagraphStyle("petit", parent=STYLE_NORMAL, fontSize=8, textColor=COULEUR_SECONDAIRE)
 STYLE_TITRE = ParagraphStyle("titre", parent=STYLE_NORMAL, fontName="Helvetica-Bold", fontSize=20, leading=24)
-STYLE_DROITE = ParagraphStyle("droite", parent=STYLE_NORMAL, alignment=2)  # 2 = aligné à droite
+STYLE_DROITE = ParagraphStyle("droite", parent=STYLE_NORMAL, alignment=2) 
 
 
 def formater_montant(valeur, devise):
@@ -34,17 +34,20 @@ def bloc_partie(titre, nom, donnees):
     for etiquette, cle in [("NIF", "nif"), ("STAT", "stat"), ("RCS", "rcs")]:
         if donnees.get(cle):
             lignes.append(f"{etiquette} : {texte(donnees[cle])}")
+
     if donnees.get("telephone"):
         lignes.append(f"Tél : {texte(donnees['telephone'])}")
+
     if donnees.get("email"):
         lignes.append(texte(donnees["email"]))
     return Paragraph("<br/>".join(lignes), STYLE_NORMAL)
 
 
-def creer_logo(facture):
+def logo(facture):
     logo = facture.entreprise.logo
     if not logo:
         return None
+    
     try:
         largeur_image, hauteur_image = ImageReader(logo.path).getSize()
     except Exception:
@@ -54,22 +57,24 @@ def creer_logo(facture):
     return Image(logo.path, width=largeur, height=largeur * hauteur_image / largeur_image)
 
 
-def creer_entete(facture):
+def entete(facture):
     emetteur = facture.donnees_emetteur()
     partie_gauche = []
-    logo = creer_logo(facture)
-    if logo:
-        partie_gauche += [logo, Spacer(1, 3 * mm)]
+    image_logo = logo(facture)
+    if image_logo:
+        partie_gauche += [image_logo, Spacer(1, 3 * mm)]
     partie_gauche.append(bloc_partie("Émetteur", emetteur["nom_societe"], emetteur))
-
+    
+    dates = []
+    if facture.numero_facture:
+        dates.append(f"<b>Date d'émission :</b> {facture.date_emission:%d/%m/%Y}")
+    dates.append(f"<b>Échéance :</b> {facture.date_echeance:%d/%m/%Y}")
     numero = facture.numero_facture or "BROUILLON"
-    lignes_droite = [f"<b>Date d'émission :</b> {facture.date_emission:%d/%m/%Y}" if facture.numero_facture else "",
-                     f"<b>Échéance :</b> {facture.date_echeance:%d/%m/%Y}"]
     partie_droite = [
         Paragraph("FACTURE", ParagraphStyle("t", parent=STYLE_TITRE, alignment=2)),
         Paragraph(f"N° {texte(numero)}", ParagraphStyle("n", parent=STYLE_DROITE, fontSize=11, leading=14)),
         Spacer(1, 3 * mm),
-        Paragraph("<br/>".join(ligne for ligne in lignes_droite if ligne), STYLE_DROITE),
+        Paragraph("<br/>".join(dates), STYLE_DROITE),
     ]
 
     tableau = Table([[partie_gauche, partie_droite]], colWidths=[95 * mm, 79 * mm])
@@ -77,7 +82,7 @@ def creer_entete(facture):
     return [tableau, Spacer(1, 8 * mm)]
 
 
-def creer_bloc_client(facture):
+def bloc_client(facture):
     client = facture.donnees_client()
     tableau = Table([[bloc_partie("Facturé à", client["nom_client"], client)]], colWidths=[174 * mm])
     tableau.setStyle(TableStyle([
@@ -90,7 +95,7 @@ def creer_bloc_client(facture):
     return [tableau, Spacer(1, 8 * mm)]
 
 
-def creer_tableau_lignes(facture):
+def lignes_tableau(facture):
     devise = facture.devise
     donnees = [["Description", "Qté", "Prix unitaire", "TVA", "Total HT"]]
     for ligne in facture.lignes.all():
@@ -118,7 +123,7 @@ def creer_tableau_lignes(facture):
     return [tableau, Spacer(1, 6 * mm)]
 
 
-def creer_tableau_totaux(facture):
+def tableau_totaux(facture):
     devise = facture.devise
     libelle_tva = "TVA (exonérée)" if facture.exoneree_tva else "TVA 20 %"
     donnees = [
@@ -126,6 +131,9 @@ def creer_tableau_totaux(facture):
         [libelle_tva, formater_montant(facture.total_tva, devise)],
         ["Total TTC", formater_montant(facture.total_ttc, devise)],
     ]
+    if facture.total_paye > 0:
+        donnees.append(["Déjà payé", formater_montant(facture.total_paye, devise)])
+        donnees.append(["Reste à payer", formater_montant(facture.reste_a_payer, devise)])
     if devise != "MGA":
         total_mga = formater_montant(facture.total_ttc * facture.taux_change_mga, "MGA")
         taux = format(facture.taux_change_mga.normalize(), "f")
@@ -145,7 +153,7 @@ def creer_tableau_totaux(facture):
     return [tableau, Spacer(1, 10 * mm)]
 
 
-def creer_pied(facture):
+def pied(facture):
     elements = []
     if facture.exoneree_tva:
         elements.append(Paragraph("Facture exonérée de TVA.", STYLE_PETIT))
@@ -156,8 +164,7 @@ def creer_pied(facture):
     return elements
 
 
-def dessiner_filigrane(canvas, document):
-    """Écrit BROUILLON en gros sur la page."""
+def filigrane(canvas, document):
     canvas.saveState()
     canvas.setFont("Helvetica-Bold", 90)
     canvas.setFillColor(colors.Color(0.42, 0.38, 0.34, alpha=0.12))
@@ -167,23 +174,26 @@ def dessiner_filigrane(canvas, document):
     canvas.restoreState()
 
 
-def ne_rien_dessiner(canvas, document):
-    pass
-
-
 def generer_pdf(facture):
     memoire = BytesIO()
     document = SimpleDocTemplate(
-        memoire, pagesize=A4, leftMargin=18 * mm, rightMargin=18 * mm, topMargin=18 * mm, bottomMargin=18 * mm,
+        memoire,
+        pagesize=A4,
+        leftMargin=18 * mm,
+        rightMargin=18 * mm,
+        topMargin=18 * mm,
+        bottomMargin=18 * mm,
         title=f"Facture {facture.numero_facture or 'brouillon'}",
     )
     elements = (
-        creer_entete(facture)
-        + creer_bloc_client(facture)
-        + creer_tableau_lignes(facture)
-        + creer_tableau_totaux(facture)
-        + creer_pied(facture)
+        entete(facture)
+        + bloc_client(facture)
+        + lignes_tableau(facture)
+        + tableau_totaux(facture)
+        + pied(facture)
     )
-    fonction_page = dessiner_filigrane if facture.statut == "BROUILLON" else ne_rien_dessiner
-    document.build(elements, onFirstPage=fonction_page, onLaterPages=fonction_page)
+    if facture.statut == "BROUILLON":
+        document.build(elements, onFirstPage=filigrane, onLaterPages=filigrane)
+    else:
+        document.build(elements)
     return memoire.getvalue()

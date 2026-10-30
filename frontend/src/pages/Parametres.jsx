@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import api, { messageErreur } from "../api.js";
+import MessageErreur from "../components/MessageErreur.jsx";
 
 function chiffresSeulement(valeur, longueur) {
   return valeur.replace(/\D/g, "").slice(0, longueur);
@@ -10,6 +11,7 @@ export default function Parametres() {
   const [nouveauLogo, setNouveauLogo] = useState(null);
   const [message, setMessage] = useState("");
   const [erreur, setErreur] = useState("");
+  const [enCours, setEnCours] = useState(false);
 
   useEffect(() => {
     api.get("/profil/")
@@ -23,8 +25,10 @@ export default function Parametres() {
 
   async function enregistrer(evenement) {
     evenement.preventDefault();
+    if (enCours) return;
     setMessage("");
     setErreur("");
+    setEnCours(true);
 
     const formulaire = new FormData();
     for (const champ of ["nom_societe", "nif", "stat", "rcs", "adresse", "telephone", "coordonnees_bancaires", "prefixe_numerotation"]) {
@@ -41,11 +45,13 @@ export default function Parametres() {
       setMessage("Paramètres enregistrés.");
     } catch (e) {
       setErreur(messageErreur(e));
+    } finally {
+      setEnCours(false);
     }
   }
 
   if (!profil) {
-    return erreur ? <div className="message message-erreur">{erreur}</div> : <p>Chargement...</p>;
+    return erreur ? <MessageErreur>{erreur}</MessageErreur> : <p>Chargement...</p>;
   }
 
   return (
@@ -55,7 +61,7 @@ export default function Parametres() {
       </div>
 
       {message && <div className="message message-succes">{message}</div>}
-      {erreur && <div className="message message-erreur">{erreur}</div>}
+      <MessageErreur>{erreur}</MessageErreur>
 
       <form onSubmit={enregistrer}>
         <div className="carte">
@@ -111,11 +117,13 @@ export default function Parametres() {
           <div className="champ" style={{ maxWidth: 240 }}>
             <label htmlFor="prefixe">Préfixe de numérotation</label>
             <input id="prefixe" value={profil.prefixe_numerotation} maxLength={10} onChange={(e) => modifierChamp("prefixe_numerotation", e.target.value)} required />
-            <span className="aide">Vos factures seront numérotées {profil.prefixe_numerotation || "FAC"}-{new Date().getFullYear()}-0001. Le préfixe ne peut plus changer après la première facture validée.</span>
+            <span className="aide">Vos factures seront numérotées {profil.prefixe_numerotation || "FAC"}-{new Date().getFullYear()}-0001. Le préfixe ne peut plus changer après la première facture validée </span>
           </div>
         </div>
 
-        <button type="submit" className="bouton bouton-principal">Enregistrer les paramètres</button>
+        <button type="submit" className="bouton bouton-principal" disabled={enCours}>
+          {enCours ? "Enregistrement..." : "Enregistrer les paramètres"}
+        </button>
       </form>
     </div>
   );

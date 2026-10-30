@@ -5,7 +5,9 @@
   background: $couleur-carte;
   border-radius: $rayon;
   box-shadow: $ombre-feuille;
-  border-top: 4px solid $couleur-accent;
+  //border-top: 4px solid $couleur-accent;
+  border: 2px solid rgba($couleur-accent, 0.8);
+  width: 100%;
   max-width: 860px;
   margin: 0 auto;
   padding: $espace-tres-grand;
@@ -23,7 +25,11 @@
   flex-wrap: wrap;
   margin-bottom: $espace-grand;
 }
-
+.feuille-entete .texte-droite {
+  @include mobile {
+    text-align: left;
+  }
+}
 .feuille-titre {
   font-family: $police-titre;
   font-size: 2rem;
@@ -139,12 +145,12 @@
 
 .detail-facture {
   display: grid;
-  grid-template-columns: 1fr 280px;
+  grid-template-columns: minmax(0, 1fr) 280px;
   gap: $espace-grand;
   align-items: start;
 
   @include tablette {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -163,4 +169,14 @@
   h2 {
     margin-bottom: $espace-petit;
   }
+}
+
+.formulaire-paiement {
+  display: flex;
+  flex-direction: column;
+  gap: $espace-petit;
+}
+
+.historique-paiements {
+  margin-top: $espace-grand;
 }

@@ -1,6 +1,4 @@
-"""Remplit le registre national fictif avec quelques entreprises pour tester l'auto-complétion.
-
-Utilisation :  python manage.py charger_registre
+"""
 Toutes les données ci-dessous sont inventées (NIF, STAT, RCS compris).
 """
 from django.core.management.base import BaseCommand

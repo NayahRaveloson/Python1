@@ -2,26 +2,27 @@ import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import api, { messageErreur } from "../api.js";
 import LignesFacture from "../components/LignesFacture.jsx";
+import MessageErreur from "../components/MessageErreur.jsx";
 import RechercheClient from "../components/RechercheClient.jsx";
 import TotauxFacture from "../components/TotauxFacture.jsx";
-import { calculerTotaux, dansTrenteJours } from "../utils.js";
+import {
+  calculerTotaux,
+  dateLocaleAujourdhui,
+  dansTrenteJours,
+} from "../utils.js";
 
 const CLIENT_VIDE = { id: null, type_client: "PARTICULIER", nom_client: "", email: "", telephone: "", nif: "", stat: "", rcs: "", adresse: "" };
-
-function dateLocaleAujourdhui() {
-  const maintenant = new Date();
-  maintenant.setMinutes(maintenant.getMinutes() - maintenant.getTimezoneOffset());
-  return maintenant.toISOString().slice(0, 10);
-}
 
 function chiffresSeulement(valeur, longueur) {
   return valeur.replace(/\D/g, "").slice(0, longueur);
 }
 
-function tauxSansNegatif(valeur) {
-  const propre = valeur.replace(/,/g, ".").replace(/[^0-9.]/g, "");
+function tauxNumerique(valeur) {
+  const propre = valeur.replace(/,/g, ".").replace(/[^0-9.-]/g, "");
+  const negatif = propre.startsWith("-");
   const morceaux = propre.split(".");
-  return morceaux.length > 2 ? morceaux[0] + "." + morceaux.slice(1).join("") : propre;
+  const nombre = morceaux.length > 2 ? morceaux[0] + "." + morceaux.slice(1).join("") : morceaux.join(".");
+  return `${negatif ? "-" : ""}${nombre.replace(/-/g, "")}`;
 }
 const EMETTEUR_VIDE = { nom_societe: "", nif: "", stat: "", rcs: "", adresse: "", telephone: "" };
 
@@ -38,6 +39,8 @@ export default function EditeurFacture() {
   const [tauxChange, setTauxChange] = useState("1");
   const [exoneree, setExoneree] = useState(false);
   const [lignes, setLignes] = useState([{ description: "", quantite: "1", prix_unitaire: "", taux_tva: "20" }]);
+  const [erreursLignes, setErreursLignes] = useState({});
+  const [erreurTaux, setErreurTaux] = useState("");
   const [erreur, setErreur] = useState("");
   const [enCours, setEnCours] = useState(false);
 
@@ -87,6 +90,12 @@ export default function EditeurFacture() {
     setClient({ ...client, [champ]: valeur });
   }
 
+  function effacerErreurLigne(index, champ) {
+    const cle = `${index}_${champ}`;
+    setErreursLignes((precedentes) => ({ ...precedentes, [cle]: "" }));
+    setErreur("");
+  }
+
   async function enregistrerClient() {
     const champsClient = {
       type_client: client.type_client,
@@ -103,20 +112,32 @@ export default function EditeurFacture() {
       return client.id;
     }
     const reponse = await api.post("/clients/", champsClient);
+    setClient({ ...client, id: reponse.data.id });
     return reponse.data.id;
   }
 
   async function enregistrer(evenement) {
     evenement.preventDefault();
+    if (enCours) return;
     setErreur("");
+    setErreursLignes({});
+    setErreurTaux("");
 
-    const lignesRemplies = lignes.filter((ligne) => ligne.description.trim() !== "");
+    const lignesRemplies = lignes
+      .map((ligne, index) => ({ ...ligne, index }))
+      .filter((ligne) => ligne.description.trim() !== "");
     if (dateEcheance < dateCreation) {
       setErreur("La date d'échéance ne peut pas être antérieure à la date de création de la facture.");
       return;
     }
-    if (devise !== "MGA" && (!tauxChange || !Number.isFinite(Number(tauxChange)) || Number(tauxChange) <= 0)) {
-      setErreur("Le taux de change doit être un nombre supérieur à zéro.");
+    if (devise !== "MGA" && (
+      !tauxChange.trim()
+      || !Number.isFinite(Number(tauxChange))
+      || Number(tauxChange) < 0.0001
+    )) {
+      const message = "Le taux de change doit être au moins égal à 0,0001.";
+      setErreurTaux(message);
+      setErreur(message);
       return;
     }
     if (client.type_client === "ENTREPRISE") {
@@ -142,6 +163,32 @@ export default function EditeurFacture() {
       return;
     }
 
+    const erreurs = {};
+    for (const ligne of lignesRemplies) {
+      const quantite = Number(ligne.quantite);
+      const prix = Number(ligne.prix_unitaire);
+
+      if (
+        !ligne.quantite.trim()
+        || !Number.isFinite(quantite)
+        || quantite < 0.01
+      ) {
+        erreurs[`${ligne.index}_quantite`] = "La quantité doit être au moins égale à 0,01.";
+      }
+      if (
+        !ligne.prix_unitaire.trim()
+        || !Number.isFinite(prix)
+        || prix <= 0
+      ) {
+        erreurs[`${ligne.index}_prix_unitaire`] = "Le prix unitaire doit être supérieur à zéro.";
+      }
+    }
+    if (Object.keys(erreurs).length) {
+      setErreursLignes(erreurs);
+      setErreur("Corrigez les valeurs signalées dans les lignes de facture.");
+      return;
+    }
+
     setEnCours(true);
     try {
       await api.patch("/profil/", emetteur);
@@ -154,8 +201,8 @@ export default function EditeurFacture() {
         exoneree_tva: exoneree,
         lignes: lignesRemplies.map((ligne) => ({
           description: ligne.description,
-          quantite: ligne.quantite || "1",
-          prix_unitaire: ligne.prix_unitaire || "0",
+          quantite: ligne.quantite,
+          prix_unitaire: ligne.prix_unitaire,
           taux_tva: ligne.taux_tva,
         })),
       };
@@ -163,6 +210,19 @@ export default function EditeurFacture() {
       navigate(`/factures/${reponse.data.id}`);
     } catch (e) {
       setErreur(messageErreur(e));
+      const erreursAPI = e.response?.data?.lignes;
+      if (Array.isArray(erreursAPI)) {
+        const erreursServeur = {};
+        erreursAPI.forEach((ligne, index) => {
+          const indexLigne = lignesRemplies[index]?.index;
+          if (indexLigne === undefined) return;
+          for (const champ of ["quantite", "prix_unitaire"]) {
+            const message = ligne?.[champ]?.[0];
+            if (message) erreursServeur[`${indexLigne}_${champ}`] = message;
+          }
+        });
+        setErreursLignes(erreursServeur);
+      }
       setEnCours(false);
     }
   }
@@ -170,7 +230,7 @@ export default function EditeurFacture() {
   const totaux = calculerTotaux(lignes, exoneree);
 
   return (
-    <form onSubmit={enregistrer}>
+    <form onSubmit={enregistrer} noValidate>
       <div className="page-entete">
         <h1>{id ? "Modifier le brouillon" : "Nouvelle facture"}</h1>
       </div>
@@ -180,7 +240,7 @@ export default function EditeurFacture() {
           <strong>Bienvenue !</strong> Créez votre première facture en moins de 60 secondes.
         </div>
       )}
-      {erreur && <div className="message message-erreur">{erreur}</div>}
+      <MessageErreur>{erreur}</MessageErreur>
 
       <div className="feuille">
         <div className="feuille-entete">
@@ -290,7 +350,11 @@ export default function EditeurFacture() {
           {devise !== "MGA" && (
             <div className="champ">
               <label htmlFor="taux">Taux de change : 1 {devise} = ... Ar</label>
-              <input id="taux" type="text" inputMode="decimal" value={tauxChange} onChange={(e) => setTauxChange(tauxSansNegatif(e.target.value))} required />
+              <input id="taux" type="text" inputMode="decimal" value={tauxChange} onChange={(e) => {
+                setTauxChange(tauxNumerique(e.target.value));
+                setErreurTaux("");
+              }} required aria-invalid={Boolean(erreurTaux)} aria-describedby={erreurTaux ? "erreur-taux" : undefined} />
+              {erreurTaux && <span className="erreur-champ" id="erreur-taux">{erreurTaux}</span>}
             </div>
           )}
         </div>
@@ -300,7 +364,17 @@ export default function EditeurFacture() {
           Facture exonérée de TVA (sinon TVA de 20 %)
         </label>
 
-        <LignesFacture lignes={lignes} setLignes={setLignes} devise={devise} />
+        <LignesFacture
+          lignes={lignes}
+          setLignes={setLignes}
+          devise={devise}
+          erreurs={erreursLignes}
+          onEffacerErreur={effacerErreurLigne}
+          onEffacerErreurs={() => {
+            setErreursLignes({});
+            setErreur("");
+          }}
+        />
         <TotauxFacture totaux={totaux} devise={devise} exoneree={exoneree} tauxChange={tauxChange} />
         <p className="aide texte-droite">Totaux indicatifs : le calcul officiel est fait par le serveur à l'enregistrement.</p>
 

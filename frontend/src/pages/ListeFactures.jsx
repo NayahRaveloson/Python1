@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import api, { messageErreur } from "../api.js";
 import BadgeStatut from "../components/BadgeStatut.jsx";
+import MessageErreur from "../components/MessageErreur.jsx";
 import { formaterDate, formaterMontant } from "../utils.js";
 
 export default function ListeFactures() {
@@ -22,7 +23,7 @@ export default function ListeFactures() {
         <Link to="/factures/nouvelle" className="bouton bouton-accent">+ Créer une facture</Link>
       </div>
 
-      {erreur && <div className="message message-erreur">{erreur}</div>}
+      <MessageErreur>{erreur}</MessageErreur>
 
       <div className="carte">
         <div className="champ" style={{ maxWidth: 240 }}>

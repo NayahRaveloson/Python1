@@ -22,29 +22,31 @@ class RegistreNationalEntreprise(models.Model):
 
 
 class ProfilEntreprise(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profil")
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name= "profil")
     nom_societe = models.CharField(max_length=255)
-    nif = models.CharField(max_length=50, blank=True)  
-    stat = models.CharField(max_length=50, blank=True) 
-    rcs = models.CharField(max_length=50, blank=True)  
+    nif = models.CharField(max_length= 50, blank= True)
+    stat = models.CharField(max_length=50, blank= True)
+    rcs = models.CharField(max_length=50, blank= True)
     adresse = models.TextField(blank=True)
     telephone = models.CharField(max_length=20, blank=True)
-    logo = models.ImageField(upload_to="logos/", blank=True, null=True)
-    coordonnees_bancaires = models.TextField(blank=True) 
-    prefixe_numerotation = models.CharField(max_length=10, default="FAC")
+    logo = models.ImageField(upload_to= "logos/", blank=True, null=True)
+    coordonnees_bancaires = models.TextField(blank=True)
+    prefixe_numerotation = models.CharField(max_length=10, default= "FAC")
 
     def __str__(self):
         return self.nom_societe
 
 
 class Client(models.Model):
-    TYPE_CLIENT_CHOICES = [
+    TYPE_CLIENT_CHOICES =[
         ("PARTICULIER", "Particulier"),
         ("ENTREPRISE", "Entreprise / Professionnel"),
     ]
 
-    entreprise = models.ForeignKey(ProfilEntreprise, on_delete=models.CASCADE, related_name="clients")
-    type_client = models.CharField(max_length=20, choices=TYPE_CLIENT_CHOICES, default="PARTICULIER")
+    entreprise = models.ForeignKey(
+         ProfilEntreprise, on_delete=models.CASCADE, related_name=  "clients"
+    )
+    type_client = models.CharField(max_length=20, choices=TYPE_CLIENT_CHOICES, default= "PARTICULIER")
     nom_client = models.CharField(max_length=255)
     email = models.EmailField()
     nif = models.CharField(max_length=50, blank=True)
@@ -58,15 +60,17 @@ class Client(models.Model):
 
 
 class CompteurFacture(models.Model):
-    entreprise = models.ForeignKey(ProfilEntreprise, on_delete=models.CASCADE, related_name="compteurs")
+    entreprise = models.ForeignKey(
+        ProfilEntreprise, on_delete=models.CASCADE, related_name="compteurs"
+    )
     annee = models.PositiveIntegerField()
     dernier_numero = models.PositiveIntegerField(default=0)
 
     class Meta:
-        unique_together = ("entreprise", "annee")
+        unique_together =("entreprise", "annee")
 
 
-def donnees_emetteur_actuelles(profil):
+def donnees_emetteur(profil):
     return {
         "nom_societe": profil.nom_societe,
         "nif": profil.nif,
@@ -78,7 +82,7 @@ def donnees_emetteur_actuelles(profil):
     }
 
 
-def donnees_client_actuelles(client):
+def donnees_client(client):
     return {
         "type_client": client.type_client,
         "nom_client": client.nom_client,
@@ -99,15 +103,22 @@ class Facture(models.Model):
     ]
     DEVISE_CHOICES = [("MGA", "Ariary"), ("EUR", "Euro"), ("USD", "Dollar")]
 
-    entreprise = models.ForeignKey(ProfilEntreprise, on_delete=models.CASCADE, related_name="factures")
-    client = models.ForeignKey(Client, on_delete=models.PROTECT, related_name="factures")
+    entreprise = models.ForeignKey(
+        ProfilEntreprise, on_delete=models.CASCADE, related_name= "factures"
+    )
+    client = models.ForeignKey(
+        Client, on_delete=models.PROTECT, related_name= "factures"
+    )
     numero_facture = models.CharField(max_length=50, blank=True, null=True)
     date_emission = models.DateField(default=timezone.localdate)
     date_echeance = models.DateField()
-    statut = models.CharField(max_length=20, choices=STATUT_CHOICES, default="BROUILLON")
-    devise = models.CharField(max_length=3, choices=DEVISE_CHOICES, default="MGA")
+    statut = models.CharField(max_length=20, choices=STATUT_CHOICES, default='BROUILLON')
+    devise = models.CharField(max_length=3, choices=DEVISE_CHOICES, default= 'MGA')
     taux_change_mga = models.DecimalField(
-        max_digits=10, decimal_places=4, default=Decimal("1.0000"), validators=[MinValueValidator(Decimal("0.0001"))]
+        max_digits=10,
+        decimal_places=4,
+        default=Decimal("1.0000"),
+        validators=[MinValueValidator(Decimal("0.0001"))],
     )
     exoneree_tva = models.BooleanField(default=False)
     total_mga = models.DecimalField(max_digits=18, decimal_places=2, default=Decimal("0.00"))
@@ -124,24 +135,47 @@ class Facture(models.Model):
 
     @property
     def total_ht(self):
-        return sum((ligne.montant_ht for ligne in self.lignes.all()), Decimal("0.00"))
-
+        total = Decimal("0.00")
+        for ligne in self.lignes.all():
+            total += ligne.montant_ht
+        return total
+    
     @property
     def total_tva(self):
         if self.exoneree_tva:
             return Decimal("0.00")
-        return sum((ligne.montant_tva for ligne in self.lignes.all()), Decimal("0.00"))
-
+        total = Decimal("0.00")
+        for ligne in self.lignes.all():
+            total += ligne.montant_tva
+        return total
+    
     @property
     def total_ttc(self):
         return self.total_ht + self.total_tva
 
+    @property
+    def total_paye(self):
+        total = Decimal("0.00")
+        for paiement in self.paiements.all():
+            total += paiement.montant
+        return total
+
+    @property
+    def reste_a_payer(self):
+        if self.statut == "PAYEE":
+            return Decimal("0.00")
+        return self.total_ttc - self.total_paye
+
     def donnees_emetteur(self):
-        return self.emetteur_fige or donnees_emetteur_actuelles(self.entreprise)
-
+        if self.emetteur_fige:
+            return self.emetteur_fige
+        return donnees_emetteur(self.entreprise)
+    
     def donnees_client(self):
-        return self.client_fige or donnees_client_actuelles(self.client)
-
+        if self.client_fige:
+            return self.client_fige
+        return donnees_client(self.client)
+    
     @transaction.atomic
     def valider(self):
         aujourdhui = timezone.localdate()
@@ -156,21 +190,19 @@ class Facture(models.Model):
         self.date_emission = aujourdhui
         self.statut = "ENVOYEE"
         self.total_mga = arrondir(self.total_ttc * self.taux_change_mga)
-        self.emetteur_fige = donnees_emetteur_actuelles(self.entreprise)
-        self.client_fige = donnees_client_actuelles(self.client)
+        self.emetteur_fige = donnees_emetteur(self.entreprise)
+        self.client_fige = donnees_client(self.client)
         self.save()
 
 
 class LigneFacture(models.Model):
-    facture = models.ForeignKey(Facture, on_delete=models.CASCADE, related_name="lignes")
+    facture = models.ForeignKey(
+        Facture, on_delete=models.CASCADE, related_name= "lignes"
+    )
     description = models.CharField(max_length=255)
-    quantite = models.DecimalField(
-        max_digits=10, decimal_places=2, default=Decimal("1"), validators=[MinValueValidator(Decimal("0.01"))]
-    )
-    prix_unitaire = models.DecimalField(
-        max_digits=15, decimal_places=2, validators=[MinValueValidator(Decimal("0"))]
-    )
-    taux_tva = models.DecimalField(max_digits=5, decimal_places=2, default=Decimal("20.00"))  # TVA Madagascar
+    quantite = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal("1"), validators=[MinValueValidator(Decimal("0.01"))])
+    prix_unitaire = models.DecimalField(max_digits=15, decimal_places=2, validators=[MinValueValidator(Decimal("0"))])
+    taux_tva = models.DecimalField(max_digits=5, decimal_places=2, default=Decimal("20.00"))
 
     @property
     def montant_ht(self):
@@ -179,3 +211,29 @@ class LigneFacture(models.Model):
     @property
     def montant_tva(self):
         return arrondir(self.montant_ht * self.taux_tva / 100)
+
+
+class Paiement(models.Model):
+    MODE_CHOICES = [
+        ("VIREMENT", "Virement bancaire"),
+        ("MVOLA", "Mvola"),
+        ("ORANGE_MONEY", "Orange Money"),
+        ("AIRTEL_MONEY", "Airtel Money"),
+        ("ESPECES", "Espèces"),
+    ]
+
+    facture = models.ForeignKey(
+        Facture, on_delete=models.CASCADE, related_name="paiements"
+    )
+    montant = models.DecimalField(
+        max_digits=18,
+        decimal_places=2,
+        validators=[MinValueValidator(Decimal("0.01"))],
+    )
+    mode = models.CharField(max_length=20, choices=MODE_CHOICES)
+    reference = models.CharField(max_length=100, blank=True)
+    date_paiement = models.DateField(default=timezone.localdate)
+    cree_le = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["date_paiement", "id"]

@@ -1,4 +1,6 @@
-@use "variable"as *;
+
+@use "sass:color";
+@use "variable" as *;
 
 .champ {
   display: flex;
@@ -27,7 +29,7 @@ textarea {
   transition: border-color 150ms ease, box-shadow 150ms ease, background 150ms ease;
 
   &:hover:not(:disabled) {
-    border-color: darken($couleur-bordure, 8%);
+    border-color: color.adjust($couleur-bordure, $lightness: -8%);
   }
 
   &:focus,
@@ -44,13 +46,67 @@ textarea {
   }
 
   &::placeholder {
-    color: lighten($couleur-secondaire, 18%);
+    color: color.adjust($couleur-secondaire, $lightness: 18%);
   }
 }
 
+
 select {
+  appearance: none;
   cursor: pointer;
+  color: $couleur-principale;
+  background-color: $couleur-carte;
   color-scheme: light;
+  border-color: $couleur-secondaire;
+  border-radius: $rayon;
+  padding-right: 2.5rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%236b6257' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m3 6 5 5 5-5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.8rem center;
+  background-size: 1rem;
+
+  &:hover:not(:disabled) {
+    border-color: $couleur-accent;
+  }
+}
+
+select option {
+  color: $couleur-principale;
+  background-color: $couleur-carte;
+}
+
+select option:checked {
+  color: $couleur-principale;
+  background-color: $couleur-fond;
+}
+
+input[type="date"] {
+  color-scheme: light;
+  accent-color: $couleur-accent;
+  background-color: $couleur-carte;
+  color: $couleur-principale;
+  border-color: $couleur-secondaire;
+
+  &:hover:not(:disabled) {
+    border-color: $couleur-accent;
+  }
+}
+
+select:focus,
+input[type="date"]:focus {
+  border-color: $couleur-accent;
+  box-shadow: 0 0 0 3px rgba($couleur-accent, 0.2);
+}
+
+select:focus-visible,
+input[type="date"]:focus-visible {
+  outline: 2px solid $couleur-accent;
+  outline-offset: 1px;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  accent-color: $couleur-accent;
+  cursor: pointer;
 }
 
 input[type="checkbox"],
@@ -84,6 +140,22 @@ textarea {
 .aide {
   font-size: 0.8rem;
   color: $couleur-secondaire;
+}
+
+.erreur-champ {
+  display: block;
+  margin-top: 0.25rem;
+  color: $couleur-danger;
+  font-size: 0.8rem;
+}
+
+.message-erreur {
+  scroll-margin-top: 1.5rem;
+
+  &:focus {
+    outline: 2px solid $couleur-danger;
+    outline-offset: 3px;
+  }
 }
 
 .recherche {

@@ -24,9 +24,7 @@ export default function RechercheClient({ onChoisir }) {
           setMesClients(reponseClients.data);
           setSocietes(reponseSocietes.data);
         }
-      } catch {
-
-      }
+      } catch {}
     }, 300);
 
     return () => {
@@ -50,7 +48,18 @@ export default function RechercheClient({ onChoisir }) {
     fermer();
   }
 
-  function choisirSociete(societe) {
+  async function choisirSociete(societe) {
+    let existant = null;
+    try {
+      const reponse = await api.get("/clients/", { params: { q: societe.nif } });
+      existant = reponse.data.find((client) => client.nif === societe.nif);
+    } catch {
+
+    }
+    if (existant) {
+      choisirMonClient(existant);
+      return;
+    }
     onChoisir({
       id: null, 
       type_client: "ENTREPRISE",

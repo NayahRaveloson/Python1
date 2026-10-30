@@ -1,6 +1,6 @@
 import { formaterMontant } from "../utils.js";
 
-// Panneau des totaux (HT, TVA, TTC). Utilisé dans l'éditeur et dans l'aperçu.
+
 export default function TotauxFacture({ totaux, devise, exoneree, tauxChange }) {
   const totalEnAriary = Number(totaux.total_ttc) * Number(tauxChange || 1);
 

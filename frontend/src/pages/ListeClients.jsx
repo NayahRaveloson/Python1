@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import api, { messageErreur } from "../api.js";
+import MessageErreur from "../components/MessageErreur.jsx";
 
 const CLIENT_VIDE = { id: null, type_client: "PARTICULIER", nom_client: "", email: "", telephone: "", nif: "", stat: "", rcs: "", adresse: "" };
 
@@ -13,6 +14,8 @@ export default function ListeClients() {
   const [formulaire, setFormulaire] = useState(null); 
   const [message, setMessage] = useState("");
   const [erreur, setErreur] = useState("");
+  const [enCours, setEnCours] = useState(false);
+  const [suppressionId, setSuppressionId] = useState(null);
 
   async function chargerClients(texte) {
     try {
@@ -51,8 +54,10 @@ export default function ListeClients() {
 
   async function enregistrer(evenement) {
     evenement.preventDefault();
+    if (enCours) return;
     setErreur("");
     const { id, ...champs } = formulaire;
+    setEnCours(true);
     try {
       if (id) {
         await api.patch(`/clients/${id}/`, champs);
@@ -65,6 +70,8 @@ export default function ListeClients() {
       await chargerClients(recherche);
     } catch (e) {
       setErreur(messageErreur(e));
+    } finally {
+      setEnCours(false);
     }
   }
 
@@ -72,12 +79,15 @@ export default function ListeClients() {
     if (!window.confirm(`Supprimer le client « ${client.nom_client} » ?`)) return;
     setMessage("");
     setErreur("");
+    setSuppressionId(client.id);
     try {
       await api.delete(`/clients/${client.id}/`);
       setMessage("Client supprimé.");
       await chargerClients(recherche);
     } catch (e) {
       setErreur(messageErreur(e));
+    } finally {
+      setSuppressionId(null);
     }
   }
 
@@ -91,7 +101,7 @@ export default function ListeClients() {
       </div>
 
       {message && <div className="message message-succes">{message}</div>}
-      {erreur && <div className="message message-erreur">{erreur}</div>}
+      <MessageErreur>{erreur}</MessageErreur>
 
       {formulaire && (
         <form className="carte" onSubmit={enregistrer}>
@@ -138,7 +148,9 @@ export default function ListeClients() {
           </div>
           <div className="actions-ligne">
             <button type="button" className="bouton bouton-discret" onClick={() => setFormulaire(null)}>Annuler</button>
-            <button type="submit" className="bouton bouton-principal">Enregistrer</button>
+            <button type="submit" className="bouton bouton-principal" disabled={enCours}>
+              {enCours ? "Enregistrement..." : "Enregistrer"}
+            </button>
           </div>
         </form>
       )}
@@ -190,7 +202,7 @@ export default function ListeClients() {
                         <button
                           className="bouton bouton-danger bouton-petit"
                           onClick={() => supprimer(client)}
-                          disabled={client.nombre_factures > 0}
+                          disabled={client.nombre_factures > 0 || suppressionId !== null}
                           title={client.nombre_factures > 0 ? "Ce client a des factures : suppression impossible" : ""}
                         >
                           Supprimer

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api, { enregistrerTokens, messageErreur } from "../api.js";
+import MessageErreur from "../components/MessageErreur.jsx";
 
 export default function Inscription() {
   const navigate = useNavigate();
@@ -8,10 +9,13 @@ export default function Inscription() {
   const [motDePasse, setMotDePasse] = useState("");
   const [nomSociete, setNomSociete] = useState("");
   const [erreur, setErreur] = useState("");
+  const [enCours, setEnCours] = useState(false);
 
   async function creerLeCompte(evenement) {
     evenement.preventDefault();
+    if (enCours) return;
     setErreur("");
+    setEnCours(true);
     try {
       await api.post("/auth/register/", { email, password: motDePasse, nom_societe: nomSociete });
 
@@ -21,6 +25,8 @@ export default function Inscription() {
       navigate("/factures/nouvelle", { state: { premiere: true } });
     } catch (e) {
       setErreur(messageErreur(e));
+    } finally {
+      setEnCours(false);
     }
   }
 
@@ -30,7 +36,7 @@ export default function Inscription() {
         <h1>Créer un compte</h1>
         <p className="texte-discret">Trois champs, et votre première facture est prête en moins de 60 secondes.</p>
 
-        {erreur && <div className="message message-erreur">{erreur}</div>}
+        <MessageErreur>{erreur}</MessageErreur>
 
         <div className="champ">
           <label htmlFor="email">Email</label>
@@ -45,7 +51,9 @@ export default function Inscription() {
           <input id="nomSociete" value={nomSociete} onChange={(e) => setNomSociete(e.target.value)} required />
         </div>
 
-        <button type="submit" className="bouton bouton-principal bouton-large">Créer mon compte</button>
+        <button type="submit" className="bouton bouton-principal bouton-large" disabled={enCours}>
+          {enCours ? "Création..." : "Créer mon compte"}
+        </button>
         <p className="texte-discret" style={{ marginTop: "1rem", marginBottom: 0 }}>
           Déjà inscrit ? <Link to="/connexion">Se connecter</Link>
         </p>

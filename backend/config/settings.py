@@ -47,7 +47,6 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
-
     "factures",
 ]
 
@@ -85,14 +84,24 @@ WSGI_APPLICATION = "config.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/6.1/ref/settings/#databases
 
-DATABASES = {
-    "default": dj_database_url.config(
-        default=os.environ.get('DATABASE_URL'),
-        conn_max_age=600
-    )
-    
-}
+DATABASE_URL = os.environ.get("DATABASE_URL")
 
+if DATABASE_URL:
+    DATABASES = {
+        "default": dj_database_url.config(default=DATABASE_URL, conn_max_age=600)
+    }
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.mysql",
+            "NAME": os.environ.get("DB_NAME", "gestionfacturation"),
+            "USER": os.environ.get("DB_USER", "root"),
+            "PASSWORD": os.environ.get("DB_PASSWORD", ""),
+            "HOST": os.environ.get("DB_HOST", "127.0.0.1"),
+            "PORT": os.environ.get("DB_PORT", "3306"),
+            "OPTIONS": {"charset": "utf8mb4"},
+        }
+    }
 
 # Password validation
 # https://docs.djangoproject.com/en/6.1/ref/settings/#auth-password-validators
@@ -132,6 +141,9 @@ USE_TZ = True
 STATIC_URL = "static/"
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
     "staticfiles": {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },

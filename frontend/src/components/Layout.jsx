@@ -14,7 +14,7 @@ export default function Layout() {
       <header className="barre-haut">
         <div className="barre-haut-contenu">
           <Link to="/" className="logo-site" onClick={() => setMenuOuvert(false)} aria-label="Facturia, accueil">
-            <span className="logo-f">F</span>acturia
+            <span className="logo-f">F</span>ACturia
           </Link>
 
           <button

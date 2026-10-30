@@ -72,6 +72,7 @@
   padding: 1.25rem;
   margin-bottom: 1.2rem;
   min-width: 0;
+  border: 1px solid $couleur-accent;
 }
 
 .dashboard-bloc h2 {
@@ -119,6 +120,8 @@
     border-bottom: 0;
   }
 }
+.dashboard-client > div { min-width: 0; }
+.dashboard-client > span { white-space: nowrap; }
 
 .dashboard-client strong {
   display: block;

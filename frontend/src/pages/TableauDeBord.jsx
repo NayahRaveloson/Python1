@@ -4,6 +4,7 @@ import { Bar } from "react-chartjs-2";
 import { BarElement, CategoryScale, Chart as ChartJS, LinearScale, Tooltip } from "chart.js";
 import api, { messageErreur } from "../api.js";
 import BadgeStatut from "../components/BadgeStatut.jsx";
+import MessageErreur from "../components/MessageErreur.jsx";
 import { formaterDate, formaterMontant } from "../utils.js";
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip);
@@ -28,10 +29,10 @@ export default function TableauDeBord() {
         const liste = Array.isArray(reponse.data) ? reponse.data : reponse.data.results || [];
         setClients(liste.slice(0, 5));
       })
-      .catch(() => setClients([]));
+      .catch((e) => setErreur(messageErreur(e)));
   }, []);
 
-  if (erreur) return <div className="message message-erreur">{erreur}</div>;
+  if (erreur) return <MessageErreur>{erreur}</MessageErreur>;
   if (!donnees) return <p>Chargement...</p>;
 
   const graphique = {
@@ -55,8 +56,11 @@ export default function TableauDeBord() {
   return (
     <div>
       <div className="page-entete dashboard-entete">
-        <div><h1>Tableau de bord</h1><p>Une vue claire sur votre activité et vos paiements.</p></div>
-        <Link to="/factures/nouvelle" className="bouton bouton-accent">+ Créer une facture</Link>
+        <div>
+          <h1>Tableau de bord</h1>
+          <p>Une vue claire sur votre activité et vos paiements.</p>
+        </div>
+        <Link to="/factures/nouvelle" className="bouton bouton-accent"> Créer une facture</Link>
       </div>
 
       <div className="grille-trois-colonnes grille-kpi">
@@ -79,7 +83,7 @@ export default function TableauDeBord() {
 
       <div className="dashboard-grille">
         <section className="dashboard-bloc">
-          <h2>Évolution des ventes · 6 derniers mois</h2>
+          <h2>Évolution des ventes : 6 derniers mois</h2>
           <div className="graphique">
             <Bar data={graphique} options={optionsGraphique} />
           </div>
@@ -90,7 +94,7 @@ export default function TableauDeBord() {
             <h2>Derniers clients</h2>
             <Link to="/clients" className="dashboard-lien">Voir tous</Link>
           </div>
-          {clients.length === 0 && <p className="texte-discret">Aucun client enregistré.</p>}
+          {clients.length === 0 && <p className="texte-discret">Aucun client enregistré </p>}
           {clients.map((client) => (
             <div className="dashboard-client" key={client.id}>
               <div><strong>{client.nom_client}</strong><small>{client.email || client.telephone || "Client"}</small></div>
@@ -104,7 +108,7 @@ export default function TableauDeBord() {
             <h2>Dernières factures</h2>
             <Link to="/factures" className="dashboard-lien">Voir toutes</Link>
           </div>
-          {donnees.dernieres_factures.length === 0 && <p className="texte-discret">Aucune facture pour le moment.</p>}
+          {donnees.dernieres_factures.length === 0 && <p className="texte-discret">Aucune factures pour le moment. </p>}
           {donnees.dernieres_factures.map((facture) => (
             <div key={facture.id} className="activite-ligne">
               <div>

@@ -8,8 +8,21 @@ export function formaterMontant(valeur, devise = "MGA") {
 
 export function formaterDate(texte) {
   if (!texte) return "";
-  const [annee, mois, jour] = texte.split("-");
+  const [annee, mois, jour] =texte.split("-");
   return `${jour}/${mois}/${annee}`;
+}
+
+export function dateLocaleAujourdhui() {
+  const parties = new Intl.DateTimeFormat("en", {
+    timeZone: "Indian/Antananarivo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date());
+  const annee =parties.find((partie) => partie.type === "year").value;
+  const mois =parties.find((partie) => partie.type === "month").value;
+  const jour =parties.find((partie) => partie.type === "day").value;
+  return `${annee}-${mois}-${jour}`;
 }
 
 export function dansTrenteJours() {
@@ -39,4 +52,12 @@ export const LIBELLES_STATUT = {
   BROUILLON: "Brouillon",
   ENVOYEE: "Envoyée",
   PAYEE: "Payée",
+};
+
+export const LIBELLES_MODE = {
+  VIREMENT: "Virement bancaire",
+  MVOLA: "Mvola",
+  ORANGE_MONEY: "Orange Money",
+  AIRTEL_MONEY: "Airtel Money",
+  ESPECES: "Espèces",
 };

@@ -9,13 +9,11 @@ import EditeurFacture from "./pages/EditeurFacture.jsx";
 import DetailFacture from "./pages/DetailFacture.jsx";
 import Parametres from "./pages/Parametres.jsx";
 
-
 export default function App() {
   return (
     <Routes>
       <Route path="/connexion" element={<Connexion />} />
       <Route path="/inscription" element={<Inscription />} />
-
       <Route element={<Layout />}>
         <Route path="/" element={<TableauDeBord />} />
         <Route path="/factures" element={<ListeFactures />} />

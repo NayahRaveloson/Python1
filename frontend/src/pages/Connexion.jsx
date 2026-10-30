@@ -1,16 +1,20 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api, { enregistrerTokens, messageErreur } from "../api.js";
+import MessageErreur from "../components/MessageErreur.jsx";
 
 export default function Connexion() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [motDePasse, setMotDePasse] = useState("");
   const [erreur, setErreur] = useState("");
+  const [enCours, setEnCours] = useState(false);
 
   async function seConnecter(evenement) {
     evenement.preventDefault();
+    if (enCours) return;
     setErreur("");
+    setEnCours(true);
     try {
       const reponse = await api.post("/auth/token/", { username: email.toLowerCase(), password: motDePasse });
       enregistrerTokens(reponse.data);
@@ -27,6 +31,8 @@ export default function Connexion() {
       } else {
         setErreur(messageErreur(e));
       }
+    } finally {
+      setEnCours(false);
     }
   }
 
@@ -36,18 +42,19 @@ export default function Connexion() {
         <h1>Connexion</h1>
         <p className="texte-discret">Gérez vos factures en Ariary, simplement.</p>
 
-        {erreur && <div className="message message-erreur">{erreur}</div>}
-
+        <MessageErreur>{erreur}</MessageErreur>
         <div className="champ">
           <label htmlFor="email">Email</label>
           <input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
         </div>
         <div className="champ">
           <label htmlFor="motDePasse">Mot de passe</label>
-          <input id="motDePasse" type="password" value={motDePasse} onChange={(e) => setMotDePasse(e.target.value)} required />
+          <input id="motDePasse" type="password" placeholder = "Mot de passe" value={motDePasse} onChange={(e) => setMotDePasse(e.target.value)} required />
         </div>
 
-        <button type="submit" className="bouton bouton-principal bouton-large">Se connecter</button>
+        <button type="submit" className="bouton bouton-principal bouton-large" disabled={enCours}>
+          {enCours ? "Connexion..." : "Se connecter"}
+        </button>
         <p className="texte-discret" style={{ marginTop: "1rem", marginBottom: 0 }}>
           Pas encore de compte ? <Link to="/inscription">Créer un compte</Link>
         </p>
